@@ -72,6 +72,13 @@ function onAddRemoteStream(event) {
   var url = event.srcElement.url;
   console.log('Adding remote stream to HTML video player (%s)', url);
   connections[url].videoElement.srcObject = event.streams[0];
+  if ('playoutDelayHint' in videoElement) {
+    videoElement.playoutDelayHint = 0;
+  }
+  
+  // Configure receiver for low latency
+  event.receiver.playoutDelayHint = 0;
+  
   connections[url].videoElement.play();
 }
 
@@ -124,8 +131,20 @@ function playStream(url, videoElement) {
 
   connections[url].type = 'inbound';
   connections[url].videoElement = videoElement;
-  connections[url].webrtcConfig = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] };
-   
+  connections[url].webrtcConfig = { 'iceServers': [
+    // { 'urls': 'stun:stun.l.google.com:19302' },
+    { 
+      'urls': 'turn:88.99.160.240:3478',
+      'username': 'turnuser',
+      'credential': 'robodyismeandimrobody2016' 
+    }],
+    'iceTransportPolicy': 'relay',
+    'bundlePolicy': 'max-bundle',
+    'rtcpMuxPolicy': 'require'
+   };
+  
+  // Add this before creating the RTCPeerConnection
+  console.log('==============================WebRTC config:', connections[url].webrtcConfig);
   connections[url].websocket = new WebSocket(url);
   connections[url].websocket.addEventListener('message', onServerMessage);
 }
@@ -144,8 +163,19 @@ function sendStream(url, deviceId) {
 
 		connections[url].type = 'outbound';
 		connections[url].deviceId = deviceId;
-		connections[url].webrtcConfig = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] };
+		connections[url].webrtcConfig = { 'iceServers': [
+      // { 'urls': 'stun:stun.l.google.com:19302' },
+      { 
+        'urls': 'turn:88.99.160.240:3478',
+        'username': 'turnuser',
+        'credential': 'robodyismeandimrobody2016' 
+      }
+    ],
+    iceTransportPolicy: 'relay'
+   };
 
+    // Add this before creating the RTCPeerConnection
+    console.log('==============================WebRTC config:', connections[url].webrtcConfig);
 		connections[url].websocket = new WebSocket(url);
 		connections[url].websocket.addEventListener('message', onServerMessage);
 		
