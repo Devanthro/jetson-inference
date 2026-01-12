@@ -75,6 +75,10 @@ function onAddRemoteStream(event) {
   if ('playoutDelayHint' in videoElement) {
     videoElement.playoutDelayHint = 0;
   }
+
+  if ('jitterBufferDelayHint' in videoElement) {
+    videoElement.jitterBufferDelayHint = 0;
+  }
   
   // Configure receiver for low latency
   event.receiver.playoutDelayHint = 0;
